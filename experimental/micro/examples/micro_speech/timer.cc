@@ -13,14 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_CONTRIB_LITE_EXPERIMENTAL_MICRO_EXAMPLES_MICRO_SPEECH_PREPROCESSOR_H_
-#define TENSORFLOW_CONTRIB_LITE_EXPERIMENTAL_MICRO_EXAMPLES_MICRO_SPEECH_PREPROCESSOR_H_
+#include "tensorflow/lite/experimental/micro/examples/micro_speech/timer.h"
 
-#include "tensorflow/lite/c/c_api_internal.h"
-#include "tensorflow/lite/experimental/micro/micro_error_reporter.h"
-
-TfLiteStatus Preprocess(tflite::ErrorReporter* error_reporter,
-                        const int16_t* input, int input_size, int output_size,
-                        uint8_t* output);
-
-#endif  // TENSORFLOW_CONTRIB_LITE_EXPERIMENTAL_MICRO_EXAMPLES_MICRO_SPEECH_PREPROCESSOR_H_
+int32_t TimeInMilliseconds() {
+  static int current_time = 0;
+  current_time += 100;
+  return current_time;
+}

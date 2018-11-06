@@ -13,8 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// See the header for documentation on the meaning of this data.
+#include "tensorflow/lite/experimental/micro/examples/micro_speech/audio_provider.h"
 
-#include "tensorflow/lite/experimental/micro/examples/micro_speech/CMSIS/no_power_spectrum_data.h"
+#include "tensorflow/lite/experimental/micro/examples/micro_speech/model_settings.h"
 
-const uint8_t g_no_power_spectrum_data[g_no_power_spectrum_data_size] = {233,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,40};
+namespace {
+int16_t g_dummy_audio_data[kMaxAudioSampleSize];
+}  // namespace
+
+TfLiteStatus GetAudioSamples(tflite::ErrorReporter* error_reporter,
+                             int start_ms, int duration_ms,
+                             int* audio_samples_size, int16_t** audio_samples) {
+  for (int i = 0; i < kMaxAudioSampleSize; ++i) {
+    g_dummy_audio_data[i] = 0;
+  }
+  *audio_samples_size = kMaxAudioSampleSize;
+  *audio_samples = g_dummy_audio_data;
+  return kTfLiteOk;
+}

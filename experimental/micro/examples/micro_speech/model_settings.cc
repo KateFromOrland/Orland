@@ -13,8 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// See the header for documentation on the meaning of this data.
+#include "tensorflow/lite/experimental/micro/examples/micro_speech/model_settings.h"
 
-#include "tensorflow/lite/experimental/micro/examples/micro_speech/CMSIS/yes_power_spectrum_data.h"
-
-const uint8_t g_yes_power_spectrum_data[g_yes_power_spectrum_data_size] = {8,88,8,0,0,0,0,0,0,0,0,3,12,0,5,22,19,5,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,1};
+const char* kCategoryLabels[kCategoryCount] = {
+    "silence",
+    "unknown",
+    "yes",
+    "no",
+};
