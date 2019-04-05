@@ -13,25 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/delegates/gpu/metal/kernels/sub.h"
+#include "tensorflow/lite/delegates/gpu/metal/kernels/elementwise.h"
 
-#include <map>
-#include <string>
-#include <utility>
+#include <unordered_map>
 #include <vector>
 
-#include "tensorflow/lite/delegates/gpu/common/model.h"
-#include "tensorflow/lite/delegates/gpu/common/shape.h"
-#include "tensorflow/lite/delegates/gpu/common/types.h"
-#include "tensorflow/lite/delegates/gpu/common/util.h"
+#include "tensorflow/lite/delegates/gpu/common/operations.h"
 #include "tensorflow/lite/delegates/gpu/metal/compute_task_descriptor.h"
+
+#include "tensorflow/lite/delegates/gpu/common/util.h"
 
 namespace tflite {
 namespace gpu {
 namespace metal {
+
 namespace {
 
-std::string GetSubCode(int src_count) {
+std::string GetElementwiseWithTwoInputsCode(int src_count,
+                                            OperationType op_type) {
   std::string code = R"(
     #include <metal_stdlib>
     using namespace metal;
@@ -51,22 +50,55 @@ std::string GetSubCode(int src_count) {
 
       int linear_index = (int(gid.z) * params.src_size.y + int(gid.y)) *
         params.src_size.x + int(gid.x);
-      FLT4 value = src_buffer0[linear_index] - src_buffer1[linear_index];
+        )";
 
-      $2 
+  switch (op_type) {
+    case OperationType::SUB: {
+      code +=
+          " FLT4 value = src_buffer0[linear_index] - "
+          "src_buffer1[linear_index];";
+      break;
+    }
+    case OperationType::DIV: {
+      code +=
+          " FLT4 value = src_buffer0[linear_index] / "
+          "src_buffer1[linear_index];";
+      break;
+    }
+    case OperationType::POW: {
+      code +=
+          " FLT4 value = pow(src_buffer0[linear_index], "
+          "src_buffer1[linear_index]);";
+      break;
+    }
+    case OperationType::SQUARED_DIFF: {
+      code += R"(
+     FLT4 src_0 = src_buffer0[linear_index];
+     FLT4 src_1 = src_buffer1[linear_index];
+     FLT4 value = (src_0 - src_1) * (src_0 - src_1);
+   )";
+      break;
+    }
+    default: {
+      return "";
+    }
+  }
+  code += R"(
+      $2
       dst_buffer[linear_index] = value;
     })";
   return code;
 }
 }  // namespace
 
-std::vector<ComputeTaskDescriptorPtr> Sub(int id,
-                                          std::vector<ValueId> input_ids,
-                                          ValueId output_id) {
+std::vector<ComputeTaskDescriptorPtr> ElementwiseWithTwoInputs(
+    int id, std::vector<ValueId> input_ids, ValueId output_id,
+    OperationType op_type) {
   auto desc = std::make_shared<ComputeTaskDescriptor>();
   desc->id = id;
   desc->is_linkable = false;
-  desc->shader_source = GetSubCode(input_ids.size());
+  desc->shader_source =
+      GetElementwiseWithTwoInputsCode(input_ids.size(), op_type);
 
   for (int i = 0; i < input_ids.size(); ++i) {
     const std::string buffer_name =
@@ -97,6 +129,38 @@ std::vector<ComputeTaskDescriptorPtr> Sub(int id,
     int groups_z = IntegralDivideRoundUp(dst_layers, groups_size.z);
     return std::make_pair(groups_size, uint3{groups_x, groups_y, groups_z});
   };
+  return {desc};
+}
+
+std::vector<ComputeTaskDescriptorPtr> ElementwiseWithOneInput(
+    int id, ValueId input_id, ValueId output_id, OperationType op_type) {
+  auto desc = std::make_shared<ComputeTaskDescriptor>();
+  desc->id = id;
+  desc->is_linkable = true;
+
+  const std::unordered_map<OperationType, std::string> functors{
+      {OperationType::ABS, "abs(value)"},
+      {OperationType::SIN, "sin(value)"},
+      {OperationType::COS, "cos(value)"},
+      {OperationType::LOG, "log(value)"},
+      {OperationType::SQRT, "sqrt(value)"},
+      {OperationType::RSQRT, "1.0 / sqrt(value)"},
+      {OperationType::SQUARE, "value * value"},
+      {OperationType::SIGMOID, "1.0 / (1.0 + exp(-1.0 * value))"},
+      {OperationType::TANH, "tanh(value)"},
+  };
+
+  if (functors.count(op_type) == 0) {
+    return {};
+  }
+
+  desc->shader_source =
+      "FLT4 linkable$0(FLT4 value, int linear_index, uint3 gid) {\n";
+  desc->shader_source += "    return " + functors.at(op_type) + ";\n";
+  desc->shader_source += "  }";
+
+  desc->input_buffers = {{input_id}};
+  desc->output_buffer = {output_id};
   return {desc};
 }
 

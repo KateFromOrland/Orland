@@ -13,20 +13,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_SUB_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_SUB_H_
+#include "tensorflow/lite/tools/evaluation/utils.h"
 
-#include "tensorflow/lite/delegates/gpu/common/operations.h"
-#include "tensorflow/lite/delegates/gpu/gl/node_shader.h"
+#include <sys/stat.h>
+
+#include <fstream>
+#include <memory>
+#include <string>
+
+#include "tensorflow/core/platform/logging.h"
 
 namespace tflite {
-namespace gpu {
-namespace gl {
+namespace evaluation {
 
-std::unique_ptr<NodeShader> NewSubtractNodeShader();
+bool ReadFileLines(const std::string& file_path,
+                   std::vector<std::string>* lines_output) {
+  if (!lines_output) {
+    LOG(ERROR) << "lines_output is null";
+    return false;
+  }
+  std::ifstream stream(file_path.c_str());
+  if (!stream) {
+    LOG(ERROR) << "Unable to open file: " << file_path;
+    return false;
+  }
+  std::string line;
+  while (std::getline(stream, line)) {
+    lines_output->push_back(line);
+  }
+  return true;
+}
 
-}  // namespace gl
-}  // namespace gpu
+}  // namespace evaluation
 }  // namespace tflite
-
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_SUB_H_

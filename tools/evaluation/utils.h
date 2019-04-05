@@ -13,23 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_METAL_KERNELS_ABS_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_METAL_KERNELS_ABS_H_
+#ifndef TENSORFLOW_LITE_TOOLS_EVALUATION_UTILS_H_
+#define TENSORFLOW_LITE_TOOLS_EVALUATION_UTILS_H_
 
+#include <string>
 #include <vector>
 
-#include "tensorflow/lite/delegates/gpu/common/model.h"
-#include "tensorflow/lite/delegates/gpu/metal/compute_task_descriptor.h"
-
 namespace tflite {
-namespace gpu {
-namespace metal {
-
-std::vector<ComputeTaskDescriptorPtr> Abs(int id, ValueId input_id,
-                                          ValueId output_id);
-
-}  // namespace metal
-}  // namespace gpu
+namespace evaluation {
+bool ReadFileLines(const std::string& file_path,
+                   std::vector<std::string>* lines_output);
+}  // namespace evaluation
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_METAL_KERNELS_ABS_H_
+#endif  // TENSORFLOW_LITE_TOOLS_EVALUATION_UTILS_H_
