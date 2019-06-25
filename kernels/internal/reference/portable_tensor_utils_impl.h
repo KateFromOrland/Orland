@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,8 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_KERNELS_INTERNAL_OPTIMIZED_TENSOR_UTILS_IMPL_H_
-#define TENSORFLOW_LITE_KERNELS_INTERNAL_OPTIMIZED_TENSOR_UTILS_IMPL_H_
+#ifndef TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_PORTABLE_TENSOR_UTILS_IMPL_H_
+#define TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_PORTABLE_TENSOR_UTILS_IMPL_H_
+
+#include <cstdint>
 
 // TODO(ghodrat): Remove this header file and the dependency to internal data
 // structure.
@@ -23,14 +25,17 @@ limitations under the License.
 #define __restrict__ __restrict
 #endif
 
-#ifndef USE_NEON
-#if defined(__ARM_NEON__) || defined(__ARM_NEON)
-#define USE_NEON
-#endif  //  defined(__ARM_NEON__) || defined(__ARM_NEON)
-#endif  //  USE_NEON
-
 namespace tflite {
 namespace tensor_utils {
+
+// Limit a float input f between +abs_limit and -abs_limit.
+float PortableClip(float f, float abs_limit);
+
+bool PortableIsZeroVector(const float* vector, int v_size);
+
+void PortableSymmetricQuantizeFloats(const float* values, const int size,
+                                     int8_t* quantized_values, float* min_value,
+                                     float* max_value, float* scaling_factor);
 
 // Multiply a matrix by a batch vector, and store results in a batch-size
 // vector.
@@ -39,40 +44,18 @@ void PortableMatrixBatchVectorMultiplyAccumulate(const float* matrix,
                                                  const float* vector,
                                                  int n_batch, float* result,
                                                  int result_stride);
-void NeonMatrixBatchVectorMultiplyAccumulate(const float* matrix, int m_rows,
-                                             int m_cols, const float* vector,
-                                             int n_batch, float* result,
-                                             int result_stride);
 
-// Matrix multiplication for quantized values using symmetric quantization.
 void PortableMatrixBatchVectorMultiplyAccumulate(
     const int8_t* __restrict__ matrix, const int m_rows, const int m_cols,
     const int8_t* __restrict__ vectors, const float* scaling_factors,
     int n_batch, float* __restrict__ result, int result_stride);
-void NeonMatrixBatchVectorMultiplyAccumulate(
-    const int8_t* __restrict__ matrix, const int m_rows, const int m_cols,
-    const int8_t* __restrict__ vectors, const float* scaling_factors,
-    int n_batch, float* __restrict__ result, int result_stride);
 
-// Multiply a matrix by a batch vector, and store results in a batch-size
-// vector. Sparse version.
 void PortableSparseMatrixBatchVectorMultiplyAccumulate(
     const float* __restrict__ matrix, const uint8_t* __restrict__ ledger,
     int m_rows, int m_cols, const float* __restrict__ vector, int n_batch,
     float* __restrict__ result, int result_stride);
-void NeonSparseMatrixBatchVectorMultiplyAccumulate(
-    const float* __restrict__ matrix, const uint8_t* __restrict__ ledger,
-    int m_rows, int m_cols, const float* __restrict__ vector, int n_batch,
-    float* __restrict__ result, int result_stride);
 
-// Matrix multiplication for quantized values using symmetric quantization.
-// Sparse version.
 void PortableSparseMatrixBatchVectorMultiplyAccumulate(
-    const int8_t* __restrict__ matrix, const uint8_t* ledger, const int m_rows,
-    const int m_cols, const int8_t* __restrict__ vectors,
-    const float* scaling_factors, int n_batch, float* __restrict__ result,
-    int result_stride);
-void NeonSparseMatrixBatchVectorMultiplyAccumulate(
     const int8_t* __restrict__ matrix, const uint8_t* ledger, const int m_rows,
     const int m_cols, const int8_t* __restrict__ vectors,
     const float* scaling_factors, int n_batch, float* __restrict__ result,
@@ -82,41 +65,27 @@ void NeonSparseMatrixBatchVectorMultiplyAccumulate(
 void PortableVectorVectorCwiseProduct(const float* vector1,
                                       const float* vector2, int v_size,
                                       float* result);
-void NeonVectorVectorCwiseProduct(const float* vector1, const float* vector2,
-                                  int v_size, float* result);
 
-// Cwise product and accumulate of two vectors. Since it's a MAC operation, the
+// Cwise product and accumulate of two vectors. Since it's a MAC opertation, the
 // assumption here is that result array is initialized to valid values.
 void PortableVectorVectorCwiseProductAccumulate(const float* vector1,
                                                 const float* vector2,
                                                 int v_size, float* result);
-void NeonVectorVectorCwiseProductAccumulate(const float* vector1,
-                                            const float* vector2, int v_size,
-                                            float* result);
 
 // Dot product of two vectors.
 float PortableVectorVectorDotProduct(const float* vector1, const float* vector2,
                                      int v_size);
-float NeonVectorVectorDotProduct(const float* vector1, const float* vector2,
-                                 int v_size);
 
 // Dot product of two batch vectors.
 void PortableBatchVectorBatchVectorDotProduct(const float* vector1,
                                               const float* vector2, int v_size,
                                               int n_batch, float* result,
                                               int result_stride);
-void NeonBatchVectorBatchVectorDotProduct(const float* vector1,
-                                          const float* vector2, int v_size,
-                                          int n_batch, float* result,
-                                          int result_stride);
 
 // Cwise product of a vector and a batch-vector.
 void PortableVectorBatchVectorCwiseProduct(const float* vector, int v_size,
                                            const float* batch_vector,
                                            int n_batch, float* result);
-void NeonVectorBatchVectorCwiseProduct(const float* vector, int v_size,
-                                       const float* batch_vector, int n_batch,
-                                       float* result);
 
 // Cwise product and accumulate of a vector and a batch-vector. Since it's a MAC
 // operation, the assumption here is that result array is initialized to valid
@@ -126,28 +95,14 @@ void PortableVectorBatchVectorCwiseProductAccumulate(const float* vector,
                                                      const float* batch_vector,
                                                      int n_batch,
                                                      float* result);
-void NeonVectorBatchVectorCwiseProductAccumulate(const float* vector,
-                                                 int v_size,
-                                                 const float* batch_vector,
-                                                 int n_batch, float* result);
-
-// Compute "1.0f - elements of vector" (used in CIFG).
-void PortableSub1Vector(const float* vector, int v_size, float* result);
-void NeonSub1Vector(const float* vector, int v_size, float* result);
-
-// Clip elements of a vector using a abs_limit value.
-void PortableClipVector(const float* vector, int v_size, float abs_limit,
-                        float* result);
-void NeonClipVector(const float* vector, int v_size, float abs_limit,
-                    float* result);
-
-// Add another vector for each batch in the batch vector.
-void PortableVectorBatchVectorAdd(const float* vector, int v_size, int n_batch,
-                                  float* batch_vector);
 
 // Batch vector initialization with another vector.
 void PortableVectorBatchVectorAssign(const float* vector, int v_size,
                                      int n_batch, float* batch_vector);
+
+// Add another vector for each batch in the batch vector.
+void PortableVectorBatchVectorAdd(const float* vector, int v_size, int n_batch,
+                                  float* batch_vector);
 
 // Apply sigmoid to elements of a vector.
 void PortableApplySigmoidToVector(const float* vector, int v_size,
@@ -161,33 +116,22 @@ void PortableApplyActivationToVector(const float* vector, int v_size,
 // Copy vector to another vector.
 void PortableCopyVector(const float* vector, int v_size, float* result);
 
+// Compute "1.0f - elements of vector" (used in CIFG).
+void PortableSub1Vector(const float* vector, int v_size, float* result);
+
 // Fill vector with 0.f.
 void PortableZeroVector(float* vector, int v_size);
 
 // Multiply all elements of vector with a scalar.
 void PortableVectorScalarMultiply(const int8_t* vector, int v_size, float scale,
                                   float* result);
-void NeonVectorScalarMultiply(const int8_t* vector, int v_size, float scale,
-                              float* result);
 
-// Limit a float input f between +abs_limit and -abs_limit.
-float PortableClip(float f, float abs_limit);
-
-// Check if all entries of a vector are zero.
-bool PortableIsZeroVector(const float* vector, int v_size);
-bool NeonIsZeroVector(const float* vector, int v_size);
-
-// Symmetric quantizer.
-void PortableSymmetricQuantizeFloats(const float* values, const int size,
-                                     int8_t* quantized_values, float* min,
-                                     float* max, float* scaling_factor);
-void NeonSymmetricQuantizeFloats(const float* values, const int size,
-                                 int8_t* quantized_values, float* min,
-                                 float* max, float* scaling_factor);
+// Clip elements of a vector using a abs_limit value.
+void PortableClipVector(const float* vector, int v_size, float abs_limit,
+                        float* result);
 
 // Shift left a vector in place with v_size size.
 void PortableVectorShiftLeft(float* vector, int v_size, float shift_value);
-void NeonVectorShiftLeft(float* vector, int v_size, float shift_value);
 
 // Reduce-sum on a float input vector:
 // input_vector: float pointer to input vector.
@@ -197,9 +141,9 @@ void NeonVectorShiftLeft(float* vector, int v_size, float shift_value);
 // added to get one element of output.
 void PortableReductionSumVector(const float* input_vector, float* output_vector,
                                 int output_size, int reduction_size);
-void NeonReductionSumVector(const float* input_vector, float* output_vector,
-                            int output_size, int reduction_size);
 
+// Layer norm for each batch.
+// normalization_epsilon is added to avoid divergence.
 void PortableMeanStddevNormalization(const float* input_vector,
                                      float* output_vector, int v_size,
                                      int n_batch, float normalization_epsilon);
@@ -207,4 +151,4 @@ void PortableMeanStddevNormalization(const float* input_vector,
 }  // namespace tensor_utils
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_KERNELS_INTERNAL_OPTIMIZED_TENSOR_UTILS_IMPL_H_
+#endif  // TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_PORTABLE_TENSOR_UTILS_IMPL_H_
