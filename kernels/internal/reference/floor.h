@@ -12,23 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_KERNELS_CPU_BACKEND_SUPPORT_H_
-#define TENSORFLOW_LITE_KERNELS_CPU_BACKEND_SUPPORT_H_
+#ifndef TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_FLOOR_H_
+#define TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_FLOOR_H_
 
-#include "tensorflow/lite/c/c_api_internal.h"
-#include "tensorflow/lite/kernels/cpu_backend_context.h"
+#include <cmath>
+
+#include "tensorflow/lite/kernels/internal/types.h"
 
 namespace tflite {
 
-namespace cpu_backend_support {
+namespace reference_ops {
 
-CpuBackendContext* GetFromContext(TfLiteContext* context);
+inline void Floor(const RuntimeShape& input_shape, const float* input_data,
+                  const RuntimeShape& output_shape, float* output_data) {
+  const int flat_size = MatchingFlatSize(input_shape, output_shape);
 
-void IncrementUsageCounter(TfLiteContext* context);
+  for (int i = 0; i < flat_size; i++) {
+    int offset = i;
+    output_data[offset] = std::floor(input_data[offset]);
+  }
+}
 
-void DecrementUsageCounter(TfLiteContext* context);
-
-}  // namespace cpu_backend_support
+}  // namespace reference_ops
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_KERNELS_CPU_BACKEND_SUPPORT_H_
+#endif  // TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_FLOOR_H_
