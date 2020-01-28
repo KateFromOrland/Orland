@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_UPSAMPLING_BILINEAR_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_UPSAMPLING_BILINEAR_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_RESIZE_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_RESIZE_H_
 
 #include <memory>
 
@@ -25,10 +25,10 @@ namespace tflite {
 namespace gpu {
 namespace gl {
 
-std::unique_ptr<NodeShader> NewUpsamplingNodeShader();
+std::unique_ptr<NodeShader> NewResizeNodeShader();
 
 }  // namespace gl
 }  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_UPSAMPLING_BILINEAR_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_RESIZE_H_
