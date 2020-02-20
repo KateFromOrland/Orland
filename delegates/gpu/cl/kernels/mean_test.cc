@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/delegates/gpu/cl/kernels/fully_connected_texture.h"
+#include "tensorflow/lite/delegates/gpu/cl/kernels/mean.h"
 
+#include <cmath>
+#include <cstdlib>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -31,16 +33,10 @@ namespace gpu {
 namespace cl {
 namespace {
 
-TEST_F(OpenCLOperationTest, FullyConnectedTexture) {
+TEST_F(OpenCLOperationTest, Mean) {
   TensorFloat32 src_tensor;
-  src_tensor.shape = BHWC(1, 1, 1, 4);
-  src_tensor.data = {0.0f, 1.0f, 2.0f, 3.0f};
-
-  FullyConnectedAttributes attr;
-  attr.weights.shape = OHWI(2, 1, 1, 4);
-  attr.weights.data = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-  attr.bias.shape = Linear(2);
-  attr.bias.data = {0.5f, -0.5f};
+  src_tensor.shape = BHWC(1, 2, 2, 1);
+  src_tensor.data = {1.0f, 2.0f, 3.0f, 4.0f};
 
   for (auto storage : env_.GetSupportedStorages()) {
     for (auto precision : env_.GetSupportedPrecisions()) {
@@ -51,12 +47,10 @@ TEST_F(OpenCLOperationTest, FullyConnectedTexture) {
       op_def.src_tensors.push_back({data_type, storage, Layout::HWC});
       op_def.dst_tensors.push_back({data_type, storage, Layout::HWC});
       TensorFloat32 dst_tensor;
-      FullyConnectedTexture operation;
-      ASSERT_OK(CreateFullyConnectedTexture(creation_context_, op_def, attr,
-                                            &operation));
+      Mean operation = CreateMean(op_def);
       ASSERT_OK(ExecuteGPUOperation(src_tensor, creation_context_, &operation,
-                                    BHWC(1, 1, 1, 2), &dst_tensor));
-      EXPECT_THAT(dst_tensor.data, Pointwise(FloatNear(eps), {14.5f, 37.5f}));
+                                    BHWC(1, 1, 1, 1), &dst_tensor));
+      EXPECT_THAT(dst_tensor.data, Pointwise(FloatNear(eps), {2.5f}));
     }
   }
 }
