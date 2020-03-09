@@ -13,8 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/micro/examples/magic_wand/constants.h"
+#include "../main_functions.h"
+#include "esp_log.h"
+#include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-// The number of expected consecutive inferences for each gesture type.
-// These defaults were established with the SparkFun Edge board.
-const int kConsecutiveInferenceThresholds[3] = {15, 12, 10};
+int tf_main(int argc, char* argv[]) {
+  setup();
+  while (true) {
+    loop();
+  }
+}
+
+extern "C" void app_main() {
+  xTaskCreate((TaskFunction_t)&tf_main, "tensorflow", 32 * 1024, NULL, 8, NULL);
+  vTaskDelete(NULL);
+}

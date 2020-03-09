@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/micro/examples/magic_wand/constants.h"
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_SPACE_TO_DEPTH_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_SPACE_TO_DEPTH_H_
 
-// The number of expected consecutive inferences for each gesture type.
-// Established with the Arduino Nano 33 BLE Sense.
-const int kConsecutiveInferenceThresholds[3] = {8, 5, 4};
+#include <memory>
+
+#include "tensorflow/lite/delegates/gpu/gl/node_shader.h"
+
+namespace tflite {
+namespace gpu {
+namespace gl {
+
+std::unique_ptr<NodeShader> NewSpaceToDepthNodeShader();
+
+}  // namespace gl
+}  // namespace gpu
+}  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_SPACE_TO_DEPTH_H_
