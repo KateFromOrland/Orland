@@ -1,4 +1,4 @@
-/* Copyright 2019 Google LLC. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,20 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_EXPERIMENTAL_RUY_RUY_HAVE_BUILT_PATH_FOR_H_
-#define TENSORFLOW_LITE_EXPERIMENTAL_RUY_RUY_HAVE_BUILT_PATH_FOR_H_
+#ifndef TENSORFLOW_LITE_MICRO_EXAMPLES_PERSON_DETECTION_ARDUINO_HM01B0_PLATFORM_H_
+#define TENSORFLOW_LITE_MICRO_EXAMPLES_PERSON_DETECTION_ARDUINO_HM01B0_PLATFORM_H_
 
-#include "tensorflow/lite/experimental/ruy/ruy/platform.h"
+#if defined(ARDUINO) && defined(ARDUINO_SFE_EDGE)
+#include "hm01b0_platform_edge.h"
+#define HM01B0_PIN_TRIG 0  // unused
+#define HM01B0_PIN_INT 0   // unused
+#endif                     // defined(ARDUINO) && defined(ARDUINO_SFE_EDGE)
 
-namespace ruy {
-
-#if RUY_PLATFORM(X86)
-bool HaveBuiltPathForSse42();
-bool HaveBuiltPathForAvx2();
-bool HaveBuiltPathForAvx512();
-bool HaveBuiltPathForAvxVnni();
-#endif  // RUY_PLATFORM(X86)
-
-}  // namespace ruy
-
-#endif  // TENSORFLOW_LITE_EXPERIMENTAL_RUY_RUY_HAVE_BUILT_PATH_FOR_H_
+#endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_PERSON_DETECTION_ARDUINO_HM01B0_PLATFORM_H_
