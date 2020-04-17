@@ -1,4 +1,4 @@
-/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_TOOLS_BENCHMARK_LOGGING_H_
-#define TENSORFLOW_LITE_TOOLS_BENCHMARK_LOGGING_H_
+#ifndef TENSORFLOW_LITE_TOOLS_LOGGING_H_
+#define TENSORFLOW_LITE_TOOLS_LOGGING_H_
 
-// LOG and CHECK macros for benchmarks.
+// LOG and CHECK macros for tflite tooling.
 
 #include <cstdlib>
 #include <iostream>
@@ -68,9 +68,7 @@ class LoggingWrapper {
   LogSeverity severity_;
   bool should_log_;
 };
-
 }  // namespace logging
-
 }  // namespace tflite
 
 #define TFLITE_LOG(severity)                                  \
@@ -78,12 +76,12 @@ class LoggingWrapper {
       tflite::logging::LoggingWrapper::LogSeverity::severity) \
       .Stream()
 
-#define TFLITE_BENCHMARK_CHECK(condition)                  \
+#define TFLITE_TOOLS_CHECK(condition)                      \
   tflite::logging::LoggingWrapper(                         \
       tflite::logging::LoggingWrapper::LogSeverity::FATAL, \
       (condition) ? false : true)                          \
       .Stream()
 
-#define TFLITE_BENCHMARK_CHECK_EQ(a, b) TFLITE_BENCHMARK_CHECK(a == b)
+#define TFLITE_TOOLS_CHECK_EQ(a, b) TFLITE_TOOLS_CHECK((a) == (b))
 
-#endif  // TENSORFLOW_LITE_TOOLS_BENCHMARK_LOGGING_H_
+#endif  // TENSORFLOW_LITE_TOOLS_LOGGING_H_
