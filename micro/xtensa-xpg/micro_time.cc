@@ -1,4 +1,4 @@
-/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,13 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_TOOLS_BENCHMARK_LOGGING_H_
-#define TENSORFLOW_LITE_TOOLS_BENCHMARK_LOGGING_H_
+// Xtensa implementation of micro_timer.
+// To include this with make, add TAGS=xtensa-xpg.
+#include "tensorflow/lite/micro/micro_time.h"
 
-// TODO(b/149482807): completely remove this file from the code base.
-#include "tensorflow/lite/tools/logging.h"
+#include <time.h>
 
-#define TFLITE_BENCHMARK_CHECK(condition) TFLITE_TOOLS_CHECK(condition)
-#define TFLITE_BENCHMARK_CHECK_EQ(a, b) TFLITE_TOOLS_CHECK(a == b)
+namespace tflite {
 
-#endif  // TENSORFLOW_LITE_TOOLS_BENCHMARK_LOGGING_H_
+int32_t ticks_per_second() { return CLOCKS_PER_SEC; }
+
+int32_t GetCurrentTimeTicks() { return clock(); }
+
+}  // namespace tflite
