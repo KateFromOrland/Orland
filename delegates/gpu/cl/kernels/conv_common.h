@@ -13,8 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-%{
-#include "tensorflow/lite/experimental/kernels/hashtable_ops.h"
-%}
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_CL_KERNELS_CONV_COMMON_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_CL_KERNELS_CONV_COMMON_H_
 
-%include "tensorflow/lite/experimental/kernels/hashtable_ops.h"
+namespace tflite {
+namespace gpu {
+namespace cl {
+
+enum class ConvWeightsLayout {
+  kUnknown,
+  kOHWIOGroupI4O4,
+};
+
+struct ConvWeightsDescription {
+  ConvWeightsLayout layout;
+  int output_group_size;
+};
+
+}  // namespace cl
+}  // namespace gpu
+}  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_CL_KERNELS_CONV_COMMON_H_
