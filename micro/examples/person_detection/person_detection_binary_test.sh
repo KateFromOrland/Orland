@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+#
+# Bash unit tests for the example binary.
 
 set -e
 
-echo "download_dependencies.sh is no longer needed, just use 'make -f tensorflow/lite/micro/tools/make/Makefile'." >&2
-exit 1
+OUTPUT_LOG_FILE=${TEST_TMPDIR}/output_log.txt
+
+# Needed for copybara compatibility.
+SCRIPT_BASE_DIR=/org_"tensor"flow
+${TEST_SRCDIR}${SCRIPT_BASE_DIR}/tensorflow/lite/micro/examples/person_detection/person_detection 2>&1 | head > ${OUTPUT_LOG_FILE}
+
+if ! grep -q 'person score' ${OUTPUT_LOG_FILE}; then
+  echo "ERROR: Expected logs not found in output '${OUTPUT_LOG_FILE}'"
+  exit 1
+fi
+
+echo
+echo "SUCCESS: person_detection_binary_test PASSED"
