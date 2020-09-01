@@ -40,6 +40,10 @@ dependencies {
 }
 ```
 
+Explore the
+[TensorFlow Lite Support Library AAR hosted at JCenter](https://bintray.com/google/tensorflow/tensorflow-lite-support)
+for different versions of the Support Library.
+
 ### Basic image manipulation and conversion
 
 The TensorFlow Lite Support Library has a suite of basic image manipulation
@@ -72,7 +76,7 @@ tImage = imageProcessor.process(tImage);
 ```
 
 `DataType` of a tensor can be read through the
-[metadata exractor library](../guide/codegen.md#read-the-metadata-from-models)
+[metadata exractor library](../convert/metadata.md#read-the-metadata-from-models)
 as well as other model information.
 
 ### Create output objects and run the model
@@ -235,4 +239,4 @@ TensorBuffer dequantizedBuffer = probabilityProcessor.process(probabilityBuffer)
 ```
 
 The quantization parameters of a tensor can be read through the
-[metadata exractor library](../guide/codegen.md#read-the-metadata-from-models).
+[metadata exractor library](../convert/metadata.md#read-the-metadata-from-models).
