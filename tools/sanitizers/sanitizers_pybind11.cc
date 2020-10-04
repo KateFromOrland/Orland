@@ -13,14 +13,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/micro/debug_log.h"
+#include "pybind11/pybind11.h"
+#include "tensorflow/python/lib/core/pybind11_lib.h"
 
-#ifndef TF_LITE_STRIP_ERROR_STRINGS
-#include <cstdio>
+PYBIND11_MODULE(_pywrap_tensorflow_lite_sanitizers, m) {
+  m.def("TSan_Enabled", []() -> bool {
+#ifdef THREAD_SANITIZER
+    return true;
+#else
+    return false;
 #endif
-
-extern "C" void DebugLog(const char* s) {
-#ifndef TF_LITE_STRIP_ERROR_STRINGS
-  fprintf(stderr, "%s", s);
+  });
+  m.def("MSan_Enabled", []() -> bool {
+#ifdef MEMORY_SANITIZER
+    return true;
+#else
+    return false;
 #endif
+  });
+  m.def("ASan_Enabled", []() -> bool {
+#ifdef ADDRESS_SANITIZER
+    return true;
+#else
+    return false;
+#endif
+  });
 }
