@@ -12,15 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+#ifndef TENSORFLOW_LITE_SCHEMA_SCHEMA_UTILS_H_
+#define TENSORFLOW_LITE_SCHEMA_SCHEMA_UTILS_H_
 
-#include "tensorflow/lite/micro/debug_log.h"
+#include "flatbuffers/flatbuffers.h"
+#include "tensorflow/lite/schema/schema_generated.h"
 
-#ifndef TF_LITE_STRIP_ERROR_STRINGS
-#include <cstdio>
-#endif
+namespace tflite {
 
-extern "C" void DebugLog(const char* s) {
-#ifndef TF_LITE_STRIP_ERROR_STRINGS
-  fprintf(stderr, "%s", s);
-#endif
-}
+// The following methods are introduced to resolve op builtin code shortage
+// problem. The new builtin opreator will be assigned to the extended builtin
+// code field in the flatbuffer schema. Those methods helps to hide builtin code
+// details.
+BuiltinOperator GetBuiltinCode(const OperatorCode *op_code);
+
+BuiltinOperator GetBuiltinCode(const OperatorCodeT *op_code);
+
+}  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_SCHEMA_SCHEMA_UTILS_H_
