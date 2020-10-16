@@ -12,15 +12,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+#include "tensorflow/lite/stderr_reporter.h"
 
-#include "tensorflow/lite/micro/debug_log.h"
-
-#ifndef TF_LITE_STRIP_ERROR_STRINGS
 #include <cstdio>
+
+#include <gtest/gtest.h>
+
+namespace tflite {
+
+namespace {
+
+void CheckWritesToStderr(ErrorReporter *error_reporter) {
+#ifndef TF_LITE_STRIP_ERROR_STRINGS
+  testing::internal::CaptureStderr();
 #endif
 
-extern "C" void DebugLog(const char* s) {
+  // Run the code under test.
+  TF_LITE_REPORT_ERROR(error_reporter, "Test: %d", 42);
+
 #ifndef TF_LITE_STRIP_ERROR_STRINGS
-  fprintf(stderr, "%s", s);
+  EXPECT_EQ("ERROR: Test: 42\n", testing::internal::GetCapturedStderr());
 #endif
 }
+
+TEST(StderrReporterTest, DefaultErrorReporter_WritesToStderr) {
+  CheckWritesToStderr(DefaultErrorReporter());
+}
+
+TEST(StderrReporterTest, StderrReporter_WritesToStderr) {
+  StderrReporter stderr_reporter;
+  CheckWritesToStderr(&stderr_reporter);
+}
+
+}  // namespace
+
+}  // namespace tflite
