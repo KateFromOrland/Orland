@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,25 +13,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_CL_TENSOR_TYPE_UTIL_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_CL_TENSOR_TYPE_UTIL_H_
-
-#include "tensorflow/lite/delegates/gpu/api.h"
-#include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
+#include "tensorflow/lite/delegates/gpu/common/task/util.h"
 
 namespace tflite {
 namespace gpu {
-namespace cl {
 
-ObjectType ToObjectType(TensorStorageType type);
+std::string MemoryTypeToCLType(MemoryType type) {
+  switch (type) {
+    case MemoryType::GLOBAL:
+      return "__global";
+    case MemoryType::CONSTANT:
+      return "__constant";
+    case MemoryType::LOCAL:
+      return "__local";
+  }
+  return "";
+}
 
-DataLayout ToDataLayout(TensorStorageType type);
+std::string MemoryTypeToMetalType(MemoryType type) {
+  switch (type) {
+    case MemoryType::GLOBAL:
+      return "device";
+    case MemoryType::CONSTANT:
+      return "constant";
+      break;
+    case MemoryType::LOCAL:
+      return "threadgroup";
+  }
+  return "";
+}
 
-TensorStorageType ToTensorStorageType(ObjectType object_type,
-                                      DataLayout data_layout);
-
-}  // namespace cl
 }  // namespace gpu
 }  // namespace tflite
-
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_CL_TENSOR_TYPE_UTIL_H_

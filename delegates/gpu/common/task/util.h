@@ -13,25 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/delegates/gpu/metal/gpu_object_desc.h"
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASK_UTIL_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASK_UTIL_H_
+
+#include <string>
+
+#include "tensorflow/lite/delegates/gpu/common/task/gpu_object_desc.h"
 
 namespace tflite {
 namespace gpu {
-namespace metal {
 
-std::string MemoryTypeToMetalType(MemoryType type) {
-  switch (type) {
-    case MemoryType::GLOBAL:
-      return "device";
-    case MemoryType::CONSTANT:
-      return "constant";
-      break;
-    case MemoryType::LOCAL:
-      return "threadgroup";
-  }
-  return "";
-}
+std::string MemoryTypeToCLType(MemoryType type);
 
-}  // namespace metal
+std::string MemoryTypeToMetalType(MemoryType type);
+
 }  // namespace gpu
 }  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASK_UTIL_H_
