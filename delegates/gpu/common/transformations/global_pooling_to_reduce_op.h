@@ -13,16 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Hexagon timer implementation.
-// To include this with make, add TARGET=hexagon.
-#include "tensorflow/lite/micro/micro_time.h"
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_GLOBAL_POOLING_TO_REDUCE_OP_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_GLOBAL_POOLING_TO_REDUCE_OP_H_
 
-#include <time.h>
+#include <memory>
+
+#include "tensorflow/lite/delegates/gpu/common/model_transformer.h"
 
 namespace tflite {
+namespace gpu {
 
-int32_t ticks_per_second() { return CLOCKS_PER_SEC; }
+// Turns global pooling to reduce operation
+// currently can convert average pooling into mean.
+std::unique_ptr<NodeTransformation> NewGlobalPoolingToReduceOp();
 
-int32_t GetCurrentTimeTicks() { return clock(); }
-
+}  // namespace gpu
 }  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_GLOBAL_POOLING_TO_REDUCE_OP_H_
