@@ -13,16 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Hexagon timer implementation.
-// To include this with make, add TARGET=hexagon.
-#include "tensorflow/lite/micro/micro_time.h"
-
-#include <time.h>
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_KERNEL_INFO_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_KERNEL_INFO_H_
 
 namespace tflite {
+namespace gpu {
 
-int32_t ticks_per_second() { return CLOCKS_PER_SEC; }
+struct KernelInfo {
+  int private_memory_size;
+  int max_work_group_size;
+};
 
-int32_t GetCurrentTimeTicks() { return clock(); }
-
+}  // namespace gpu
 }  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_KERNEL_INFO_H_

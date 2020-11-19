@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Posix implementation of micro_timer.
-// To include this with make, add TAGS=posix.
-#include "tensorflow/lite/micro/micro_time.h"
-
-#include <time.h>
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASK_COMPILER_OPTIONS_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASK_COMPILER_OPTIONS_H_
 
 namespace tflite {
+namespace gpu {
 
-int32_t ticks_per_second() { return CLOCKS_PER_SEC; }
+enum class CompilerOptions {
+  kAdrenoFullSimd,
+  kAdrenoMoreWaves,
+  kClPowervrFp16,
+  kClDisableOptimizations,
+  kCl20,
+  kCl30,
+};
 
-int32_t GetCurrentTimeTicks() { return clock(); }
-
+}  // namespace gpu
 }  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASK_COMPILER_OPTIONS_H_

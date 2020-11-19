@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,26 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_CL_KERNELS_TUNING_PARAMETERS_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_CL_KERNELS_TUNING_PARAMETERS_H_
+#ifndef TENSORFLOW_LITE_EXAMPLES_LABEL_IMAGE_LOG_H_
+#define TENSORFLOW_LITE_EXAMPLES_LABEL_IMAGE_LOG_H_
 
-#include "tensorflow/lite/delegates/gpu/cl/cl_command_queue.h"
-#include "tensorflow/lite/delegates/gpu/cl/device_info.h"
+#include <iostream>
+#include <sstream>
 
 namespace tflite {
-namespace gpu {
-namespace cl {
+namespace label_image {
 
-enum class TuningType { EXHAUSTIVE, FAST };
+class Log {
+  std::stringstream stream_;
 
-struct TuningParameters {
-  ProfilingCommandQueue* queue;
-  const DeviceInfo* info;
-  TuningType tuning_type = TuningType::EXHAUSTIVE;
+ public:
+  explicit Log(const char* severity) { stream_ << severity << ": "; }
+  std::stringstream& Stream() { return stream_; }
+  ~Log() { std::cerr << stream_.str() << std::endl; }
 };
 
-}  // namespace cl
-}  // namespace gpu
+#define LOG(severity) tflite::label_image::Log(#severity).Stream()
+
+}  // namespace label_image
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_CL_KERNELS_TUNING_PARAMETERS_H_
+#endif  // TENSORFLOW_LITE_EXAMPLES_LABEL_IMAGE_LOG_H_
