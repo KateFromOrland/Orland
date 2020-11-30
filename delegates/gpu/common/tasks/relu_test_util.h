@@ -12,20 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_EXPERIMENTAL_ACCELERATION_CONFIGURATION_PROTO_TO_FLATBUFFER_H_
-#define TENSORFLOW_LITE_EXPERIMENTAL_ACCELERATION_CONFIGURATION_PROTO_TO_FLATBUFFER_H_
 
-#include "flatbuffers/flatbuffers.h"  // from @flatbuffers
-#include "tensorflow/lite/experimental/acceleration/configuration/configuration.pb.h"
-#include "tensorflow/lite/experimental/acceleration/configuration/configuration_generated.h"
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
+
+#include "tensorflow/lite/delegates/gpu/common/task/testing_util.h"
 
 namespace tflite {
+namespace gpu {
 
-// Converts the provided ComputeSettings from proto to flatbuffer format.
-const ComputeSettings* ConvertFromProto(
-    const proto::ComputeSettings& proto_settings,
-    flatbuffers::FlatBufferBuilder* builder);
+void ReLUNoClipNoAlphaTest(TestExecutionEnvironment* env);
+void ReLUClipTest(TestExecutionEnvironment* env);
+void ReLUAlphaTest(TestExecutionEnvironment* env);
+void ReLUAlphaClipTest(TestExecutionEnvironment* env);
 
+}  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_EXPERIMENTAL_ACCELERATION_CONFIGURATION_PROTO_TO_FLATBUFFER_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
