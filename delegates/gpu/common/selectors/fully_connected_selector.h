@@ -13,26 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_METAL_RUNTIME_OPTIONS_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_METAL_RUNTIME_OPTIONS_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SELECTORS_FULLY_CONNECTED_SELECTOR_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SELECTORS_FULLY_CONNECTED_SELECTOR_H_
+
+#include <memory>
+
+#include "tensorflow/lite/delegates/gpu/common/operations.h"
+#include "tensorflow/lite/delegates/gpu/common/status.h"
+#include "tensorflow/lite/delegates/gpu/common/task/gpu_operation.h"
 
 namespace tflite {
 namespace gpu {
-namespace metal {
 
-struct RuntimeOptions {
-  enum class Precision {
-    FP16,
-    FP32,
-  };
-  // Buffer storage format. If FP32 then accumulator must be FP32.
-  Precision storage_precision = Precision::FP32;
-  // Accumulator precision. Defines the precision for convolutions.
-  Precision accumulator_precision = Precision::FP32;
-};
+std::unique_ptr<GPUOperation> SelectFullyConnected(
+    const FullyConnectedAttributes& attr, const GpuInfo& gpu_info,
+    const OperationDef& op_def, int batch_size);
 
-}  // namespace metal
 }  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_METAL_RUNTIME_OPTIONS_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SELECTORS_FULLY_CONNECTED_SELECTOR_H_

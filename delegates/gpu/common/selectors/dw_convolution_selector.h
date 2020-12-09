@@ -13,26 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_METAL_API_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_METAL_API_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SELECTORS_DW_CONVOLUTION_SELECTOR_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SELECTORS_DW_CONVOLUTION_SELECTOR_H_
 
-#include "tensorflow/lite/delegates/gpu/common/gpu_info.h"
-#include "tensorflow/lite/delegates/gpu/common/model.h"
-#include "tensorflow/lite/delegates/gpu/common/precision.h"
+#include <memory>
+
+#include "tensorflow/lite/delegates/gpu/common/operations.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
-#include "tensorflow/lite/delegates/gpu/metal/compiled_model.h"
+#include "tensorflow/lite/delegates/gpu/common/task/gpu_operation.h"
 
 namespace tflite {
 namespace gpu {
-namespace metal {
 
-// Builds CompiledModel out of GraphFloat32 graph using provided RuntimeOptions.
-absl::Status Compile(const GraphFloat32& graph, const GpuInfo& gpu_info,
-                     CalculationsPrecision precision,
-                     CompiledModel* compiled_model);
+std::unique_ptr<GPUOperation> SelectDWConvolution(
+    const DepthwiseConvolution2DAttributes& attr, const GpuInfo& gpu_info,
+    const OperationDef& op_def);
 
-}  // namespace metal
 }  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_METAL_API_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SELECTORS_DW_CONVOLUTION_SELECTOR_H_
