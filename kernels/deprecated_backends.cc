@@ -12,26 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_MICRO_KERNELS_QUANTIZE_H_
-#define TENSORFLOW_LITE_MICRO_KERNELS_QUANTIZE_H_
-
-#include "tensorflow/lite/c/common.h"
-#include "tensorflow/lite/kernels/internal/types.h"
 
 namespace tflite {
 
-struct OpDataQuantizeReference {
-  tflite::QuantizationParams quantization_params;
-  // The scaling factor from input to output (aka the 'real multiplier') can
-  // be represented as a fixed point multiplier plus a left shift.
-  int32_t requantize_output_multiplier;
-  int requantize_output_shift;
-
-  int32_t input_zero_point;
-};
-
-TfLiteStatus EvalQuantizeReference(TfLiteContext* context, TfLiteNode* node);
+// Include this target as a dependency in order to define this function for
+// CpuBackendContext. Its use is to control execution of deprecated paths
+// by providing a symbol definition for otherwise "weak" symbol
+// declarations in CpuBackendContext.
+extern bool UseGemmlowpOnX86() { return true; }
 
 }  // namespace tflite
-
-#endif  // TENSORFLOW_LITE_MICRO_KERNELS_QUANTIZE_H_
