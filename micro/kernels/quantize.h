@@ -12,16 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_CREATE_OP_RESOLVER_H_
-#define TENSORFLOW_LITE_CREATE_OP_RESOLVER_H_
+#ifndef TENSORFLOW_LITE_MICRO_KERNELS_QUANTIZE_H_
+#define TENSORFLOW_LITE_MICRO_KERNELS_QUANTIZE_H_
 
-#include <memory>
-
-#include "tensorflow/lite/op_resolver.h"
+#include "tensorflow/lite/c/common.h"
+#include "tensorflow/lite/kernels/internal/types.h"
 
 namespace tflite {
 
-std::unique_ptr<MutableOpResolver> CreateOpResolver();
-}
+struct OpDataQuantizeReference {
+  tflite::QuantizationParams quantization_params;
+  // The scaling factor from input to output (aka the 'real multiplier') can
+  // be represented as a fixed point multiplier plus a left shift.
+  int32_t requantize_output_multiplier;
+  int requantize_output_shift;
 
-#endif  // TENSORFLOW_LITE_CREATE_OP_RESOLVER_H_
+  int32_t input_zero_point;
+};
+
+TfLiteStatus EvalQuantizeReference(TfLiteContext* context, TfLiteNode* node);
+
+}  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_MICRO_KERNELS_QUANTIZE_H_

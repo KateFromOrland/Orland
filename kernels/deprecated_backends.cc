@@ -12,16 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_LITE_CREATE_OP_RESOLVER_H_
-#define TENSORFLOW_LITE_CREATE_OP_RESOLVER_H_
-
-#include <memory>
-
-#include "tensorflow/lite/op_resolver.h"
 
 namespace tflite {
 
-std::unique_ptr<MutableOpResolver> CreateOpResolver();
-}
+// Include this target as a dependency in order to define this function for
+// CpuBackendContext. Its use is to control execution of deprecated paths
+// by providing a symbol definition for otherwise "weak" symbol
+// declarations in CpuBackendContext.
+extern bool UseGemmlowpOnX86() { return true; }
 
-#endif  // TENSORFLOW_LITE_CREATE_OP_RESOLVER_H_
+}  // namespace tflite
