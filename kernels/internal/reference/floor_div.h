@@ -12,22 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+#ifndef TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_FLOOR_DIV_H_
+#define TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_FLOOR_DIV_H_
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
+#include <cmath>
+#include <functional>
 
-#include "tensorflow/lite/delegates/gpu/common/status.h"
-#include "tensorflow/lite/delegates/gpu/common/task/testing_util.h"
+#include "tensorflow/lite/kernels/internal/types.h"
 
 namespace tflite {
-namespace gpu {
+namespace reference_ops {
 
-absl::Status ReLUNoClipNoAlphaTest(TestExecutionEnvironment* env);
-absl::Status ReLUClipTest(TestExecutionEnvironment* env);
-absl::Status ReLUAlphaTest(TestExecutionEnvironment* env);
-absl::Status ReLUAlphaClipTest(TestExecutionEnvironment* env);
+template <typename T>
+T FloorDiv(T input1, T input2) {
+  return std::floor(std::divides<double>()(static_cast<double>(input1),
+                                           static_cast<double>(input2)));
+}
 
-}  // namespace gpu
+}  // namespace reference_ops
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
+#endif  // TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_FLOOR_DIV_H_

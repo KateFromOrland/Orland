@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_QUANTIZE_AND_DEQUANTIZE_TEST_UTIL_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_QUANTIZE_AND_DEQUANTIZE_TEST_UTIL_H_
 
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/task/testing_util.h"
@@ -22,12 +22,17 @@ limitations under the License.
 namespace tflite {
 namespace gpu {
 
-absl::Status ReLUNoClipNoAlphaTest(TestExecutionEnvironment* env);
-absl::Status ReLUClipTest(TestExecutionEnvironment* env);
-absl::Status ReLUAlphaTest(TestExecutionEnvironment* env);
-absl::Status ReLUAlphaClipTest(TestExecutionEnvironment* env);
+absl::Status QuantAndDequant_Dim2Bits8Test(TestExecutionEnvironment* env);
+
+absl::Status QuantAndDequant_Dim3Bits8_NegativeRangeTest(
+    TestExecutionEnvironment* env);
+
+absl::Status QuantAndDequant_Dim3Bits16Test(TestExecutionEnvironment* env);
+
+absl::Status QuantAndDequant_Dim2Bits16_NegativeRangeTest(
+    TestExecutionEnvironment* env);
 
 }  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_RELU_TEST_UTIL_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_QUANTIZE_AND_DEQUANTIZE_TEST_UTIL_H_
