@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,24 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_METAL_KERNELS_MAX_UNPOOLING_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_METAL_KERNELS_MAX_UNPOOLING_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_GL_TEXTURE_HELPER_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_GL_GL_TEXTURE_HELPER_H_
 
-#include <vector>
-
-#include "tensorflow/lite/delegates/gpu/common/model.h"
-#include "tensorflow/lite/delegates/gpu/common/operations.h"
-#include "tensorflow/lite/delegates/gpu/metal/compute_task_descriptor.h"
+#include "tensorflow/lite/delegates/gpu/common/data_type.h"
+#include "tensorflow/lite/delegates/gpu/gl/portable_gl31.h"
 
 namespace tflite {
 namespace gpu {
-namespace metal {
+namespace gl {
 
-ComputeTaskDescriptor MaxUnpooling(const OperationDef& definition,
-                                   const MaxUnpooling2DAttributes& attr);
+GLenum ToTextureFormat(DataType type);
 
-}  // namespace metal
+GLenum ToTextureInternalFormat(DataType type);
+
+GLenum ToTextureDataType(DataType type);
+
+}  // namespace gl
 }  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_METAL_KERNELS_MAX_UNPOOLING_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_GL_TEXTURE_HELPER_H_
