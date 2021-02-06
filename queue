@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <new>
+
+struct elem {
+    int number;
+    elem* next;
+};
+
+struct queue {
+    elem* begin;
+    elem* end;
+    int len;
+
+    queue();  //конструктор
+    ~queue();  //деструктор
+    void push(int number);  //добавить число ok
+    int top();  //возвращает первый элемент
+    int pop();  //возвращает и удаляет последний элемент
+    int back();  //возвращает последний элемент
+    int size();  //возвращает размер
+    void clear();  //очищает очередь
+};
+
+queue::queue() {
+    begin = nullptr;
+    end = nullptr;
+    len = 0;
+}
+
+queue::~queue() {
+    clear();
+}
+
+void queue::push(int number) {
+    elem* element = new elem;
+    element->number = number;
+    if (len != 0) {
+        end->next = element;
+    }
+    element->next = nullptr;
+    end = element;
+    len++;
+    if (len == 1) {
+        begin = element;
+    }
+    printf("ok\n");
+}
+
+int queue::top() {
+    return begin->number;
+}
+
+int queue::pop() {
+    elem* old_top = begin;
+    begin = old_top->next;
+    int number = old_top->number;
+    if (len == 1) {
+        end = nullptr;
+    }
+    delete(old_top);
+    len--;
+    return number;
+}
+
+int queue::back() {
+    return end->number;
+}
+
+int queue::size() {
+    return len;
+}
+
+void queue::clear() {
+    while (len > 0) {
+        pop();
+    }
+}
+
+int main() {
+    queue que;
+    que.push(3);
+    que.push(17);
+    que.push(8);
+    assert(que.top() == 3);
+    assert(que.back() == 8);
+    assert(que.size() == 3);
+    que.push(11);
+    assert(que.pop() == 3);
+    assert(que.size() == 3);
+    assert(que.pop() == 17);
+    assert(que.back() == 11);
+    que.clear();
+    assert(que.size() == 0);
+    que.push(19);
+    assert(que.top() == 19);
+    assert(que.back() == 19);
+    return 0;
+}
