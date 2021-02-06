@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,26 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include <memory>
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_DEPTHWISE_CONV_3X3_STRIDE_H2_TEST_UTIL_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_DEPTHWISE_CONV_3X3_STRIDE_H2_TEST_UTIL_H_
 
-#include "absl/strings/str_cat.h"
-#include "tensorflow/lite/delegates/gpu/common/model.h"
-#include "tensorflow/lite/delegates/gpu/common/operations.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
-#include "tensorflow/lite/delegates/gpu/metal/selectors/subgraph.h"
+#include "tensorflow/lite/delegates/gpu/common/task/testing_util.h"
 
 namespace tflite {
 namespace gpu {
-namespace metal {
 
-absl::Status SelectDefault(const GpuInfo& gpu_info, const OperationDef& op_def,
-                           const std::vector<Value*>& inputs,
-                           const std::vector<Value*>& outputs, const Node& node,
-                           GPUOperationsSubgraph* gpu_subgraph) {
-  return absl::UnimplementedError(
-      absl::StrCat("No selector for ", node.operation.type));
-}
+absl::Status DepthWiseConv3x3StrideH2SimpleWeightsTest(
+    TestExecutionEnvironment* env);
 
-}  // namespace metal
 }  // namespace gpu
 }  // namespace tflite
+
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_DEPTHWISE_CONV_3X3_STRIDE_H2_TEST_UTIL_H_
