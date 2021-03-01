@@ -174,15 +174,5 @@ with tf.control_dependencies([tf.initializers.tables_initializer()]):
 
 ## How to Include Hashtable ops in your TFLite.
 
-Currently, hashtable ops are not included in the builtin op set. You need to add
-hashtable ops manually by including the following dependency:
-
-`"//tensorflow/lite/kernels/hashtable:hashtable_op_kernels"`
-
-And then, your op resolver should add them like the following statements:
-
-
-```
-  // Add hashtable op handlers.
-  tflite::ops::custom::AddHashtableOps(&resolver);
-```
+Currently, hashtable ops are now a part of the TFLite builtin op set. You don't
+need to add hashtable ops manually.

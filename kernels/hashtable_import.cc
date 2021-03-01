@@ -17,11 +17,10 @@ limitations under the License.
 #include "tensorflow/lite/experimental/resource/lookup_interfaces.h"
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
-#include "tensorflow/lite/schema/schema_generated.h"
 
 namespace tflite {
 namespace ops {
-namespace custom {
+namespace builtin {
 
 namespace hashtable {
 
@@ -36,8 +35,7 @@ TfLiteStatus PrepareHashtableImport(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteTensor* input_resource_id_tensor;
   TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputResourceIdTensor,
                                           &input_resource_id_tensor));
-  TF_LITE_ENSURE(context, input_resource_id_tensor->type == kTfLiteResource ||
-                              input_resource_id_tensor->type == kTfLiteInt32);
+  TF_LITE_ENSURE_EQ(context, input_resource_id_tensor->type, kTfLiteResource);
   TF_LITE_ENSURE_EQ(context, NumDimensions(input_resource_id_tensor), 1);
   TF_LITE_ENSURE_EQ(context, SizeOfDimension(input_resource_id_tensor, 0), 1);
 
@@ -92,11 +90,6 @@ TfLiteRegistration* Register_HASHTABLE_IMPORT() {
   return &r;
 }
 
-// Alias for selective build.
-TfLiteRegistration* Register_LOOKUP_TABLE_IMPORT_V2() {
-  return Register_HASHTABLE_IMPORT();
-}
-
-}  // namespace custom
+}  // namespace builtin
 }  // namespace ops
 }  // namespace tflite
