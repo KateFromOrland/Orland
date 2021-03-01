@@ -17,8 +17,6 @@ limitations under the License.
 
 #include "absl/memory/memory.h"
 #include "absl/strings/match.h"
-#include "flatbuffers/flexbuffers.h"  // from @flatbuffers
-#include "tensorflow/lite/core/api/flatbuffer_conversions.h"
 #include "tensorflow/lite/experimental/resource/lookup_interfaces.h"
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
@@ -30,23 +28,19 @@ namespace tflite {
 
 // Forward declaration for op kernels.
 namespace ops {
-namespace custom {
+namespace builtin {
 
 TfLiteRegistration* Register_HASHTABLE();
 TfLiteRegistration* Register_HASHTABLE_FIND();
 TfLiteRegistration* Register_HASHTABLE_IMPORT();
 TfLiteRegistration* Register_HASHTABLE_SIZE();
 
-}  // namespace custom
+}  // namespace builtin
 }  // namespace ops
 
 namespace {
 
 using ::testing::ElementsAreArray;
-
-static constexpr const char kSharedNameStr[] = "shared_name";
-static constexpr const char kKeyDtypeStr[] = "key_dtype";
-static constexpr const char kValueDtypeStr[] = "value_dtype";
 
 typedef enum {
   kResourceTensorId = 0,
@@ -119,14 +113,14 @@ class HashtableGraph {
   ~HashtableGraph() {}
 
   void BuildDefaultGraph() {
-    std::vector<uint8_t> hashtable_params = GetHashtableParamsInFlatbuffer();
+    TfLiteHashtableParams* hashtable_params = GetHashtableParams();
 
     int node_index;
     // Hash table node.
     interpreter_->AddNodeWithParameters(
-        {}, {kResourceTensorId},
-        reinterpret_cast<const char*>(hashtable_params.data()),
-        hashtable_params.size(), nullptr, hashtable_registration_, &node_index);
+        {}, {kResourceTensorId}, nullptr, 0,
+        reinterpret_cast<void*>(hashtable_params), hashtable_registration_,
+        &node_index);
 
     // Hash table import node.
     interpreter_->AddNodeWithParameters(
@@ -146,14 +140,14 @@ class HashtableGraph {
   }
 
   void BuildNoImportGraph() {
-    std::vector<uint8_t> hashtable_params = GetHashtableParamsInFlatbuffer();
+    TfLiteHashtableParams* hashtable_params = GetHashtableParams();
 
     int node_index;
     // Hash table node.
     interpreter_->AddNodeWithParameters(
-        {}, {kResourceTensorId},
-        reinterpret_cast<const char*>(hashtable_params.data()),
-        hashtable_params.size(), nullptr, hashtable_registration_, &node_index);
+        {}, {kResourceTensorId}, nullptr, 0,
+        reinterpret_cast<void*>(hashtable_params), hashtable_registration_,
+        &node_index);
 
     // Hash table lookup node.
     interpreter_->AddNodeWithParameters(
@@ -168,14 +162,14 @@ class HashtableGraph {
   }
 
   void BuildImportTwiceGraph() {
-    std::vector<uint8_t> hashtable_params = GetHashtableParamsInFlatbuffer();
+    TfLiteHashtableParams* hashtable_params = GetHashtableParams();
 
     int node_index;
     // Hash table node.
     interpreter_->AddNodeWithParameters(
-        {}, {kResourceTensorId},
-        reinterpret_cast<const char*>(hashtable_params.data()),
-        hashtable_params.size(), nullptr, hashtable_registration_, &node_index);
+        {}, {kResourceTensorId}, nullptr, 0,
+        reinterpret_cast<void*>(hashtable_params), hashtable_registration_,
+        &node_index);
 
     // Hash table import node.
     interpreter_->AddNodeWithParameters(
@@ -200,14 +194,14 @@ class HashtableGraph {
   }
 
   void BuildTwoHashtablesGraph() {
-    std::vector<uint8_t> hashtable_params = GetHashtableParamsInFlatbuffer();
+    TfLiteHashtableParams* hashtable_params = GetHashtableParams();
 
     int node_index;
     // Hash table node.
     interpreter_->AddNodeWithParameters(
-        {}, {kResourceTensorId},
-        reinterpret_cast<const char*>(hashtable_params.data()),
-        hashtable_params.size(), nullptr, hashtable_registration_, &node_index);
+        {}, {kResourceTensorId}, nullptr, 0,
+        reinterpret_cast<void*>(hashtable_params), hashtable_registration_,
+        &node_index);
 
     // Hash table import node.
     interpreter_->AddNodeWithParameters(
@@ -225,13 +219,12 @@ class HashtableGraph {
         {kResourceTensorId}, {kSizeTensorId}, nullptr, 0, nullptr,
         hashtable_size_registration_, &node_index);
 
+    TfLiteHashtableParams* hashtable_two_params = GetHashtableParams();
+
     // Hash table two node.
-    std::vector<uint8_t> hashtable_two_params =
-        GetHashtableParamsInFlatbuffer();
     interpreter_->AddNodeWithParameters(
-        {}, {kResourceTwoTensorId},
-        reinterpret_cast<const char*>(hashtable_two_params.data()),
-        hashtable_two_params.size(), nullptr, hashtable_registration_,
+        {}, {kResourceTwoTensorId}, nullptr, 0,
+        reinterpret_cast<void*>(hashtable_two_params), hashtable_registration_,
         &node_index);
 
     // Hash table two import node.
@@ -356,7 +349,7 @@ class HashtableGraph {
 
     // Resource id tensor.
     interpreter_->SetTensorParametersReadWrite(
-        kResourceTensorId, kTfLiteResource, "", {1}, TfLiteQuantization());
+        kResourceTensorId, kTfLiteResource, "", {}, TfLiteQuantization());
 
     // Key tensor for import.
     interpreter_->SetTensorParametersReadWrite(kKeyTensorId, key_type_, "",
@@ -389,7 +382,7 @@ class HashtableGraph {
     if (table_two_initialization) {
       // Resource id tensor.
       interpreter_->SetTensorParametersReadWrite(
-          kResourceTwoTensorId, kTfLiteResource, "", {1}, TfLiteQuantization());
+          kResourceTwoTensorId, kTfLiteResource, "", {}, TfLiteQuantization());
 
       // Key tensor for import.
       interpreter_->SetTensorParametersReadWrite(
@@ -446,35 +439,29 @@ class HashtableGraph {
 
  private:
   void InitOpRegistrations() {
-    hashtable_registration_ = tflite::ops::custom::Register_HASHTABLE();
+    hashtable_registration_ = tflite::ops::builtin::Register_HASHTABLE();
     ASSERT_NE(hashtable_registration_, nullptr);
 
     hashtable_find_registration_ =
-        tflite::ops::custom::Register_HASHTABLE_FIND();
+        tflite::ops::builtin::Register_HASHTABLE_FIND();
     ASSERT_NE(hashtable_find_registration_, nullptr);
 
     hashtable_import_registration_ =
-        tflite::ops::custom::Register_HASHTABLE_IMPORT();
+        tflite::ops::builtin::Register_HASHTABLE_IMPORT();
     ASSERT_NE(hashtable_import_registration_, nullptr);
 
     hashtable_size_registration_ =
-        tflite::ops::custom::Register_HASHTABLE_SIZE();
+        tflite::ops::builtin::Register_HASHTABLE_SIZE();
     ASSERT_NE(hashtable_size_registration_, nullptr);
   }
 
-  std::vector<uint8_t> GetHashtableParamsInFlatbuffer() {
-    TensorType key_tensor_type = ConvertTfLiteType(key_type_);
-    TensorType value_tensor_type = ConvertTfLiteType(value_type_);
-
-    flexbuffers::Builder fbb;
-    fbb.Map([&]() {
-      fbb.String(kSharedNameStr,
-                 "test_table_name" + std::to_string(std::rand()));
-      fbb.Int(kKeyDtypeStr, key_tensor_type);
-      fbb.Int(kValueDtypeStr, value_tensor_type);
-    });
-    fbb.Finish();
-    return fbb.GetBuffer();
+  TfLiteHashtableParams* GetHashtableParams() {
+    TfLiteHashtableParams* params = reinterpret_cast<TfLiteHashtableParams*>(
+        malloc(sizeof(TfLiteHashtableParams)));
+    params->table_id = std::rand();
+    params->key_dtype = key_type_;
+    params->value_dtype = value_type_;
+    return params;
   }
 
   // Tensor types
@@ -498,6 +485,10 @@ class HashtableGraph {
   TfLiteRegistration* hashtable_find_registration_;
   TfLiteRegistration* hashtable_import_registration_;
   TfLiteRegistration* hashtable_size_registration_;
+
+  // Hashtable params.
+  TfLiteHashtableParams* hashtable_params_;
+  TfLiteHashtableParams* hashtable_two_params_;
 
   // Interpreter.
   std::unique_ptr<Interpreter> interpreter_;
@@ -631,29 +622,24 @@ TEST(HashtableOpsTest, TestImportDifferentKeyAndValueSize) {
   EXPECT_EQ(graph.Invoke(), kTfLiteError);
 }
 
-// HashtableOpModel creates a model with one signle Hashtable op.
+// HashtableOpModel creates a model with one single Hashtable op.
 class HashtableOpModel : public SingleOpModel {
  public:
-  explicit HashtableOpModel(const char* table_name, TensorType key_dtype,
+  explicit HashtableOpModel(const int table_id, TensorType key_dtype,
                             TensorType value_dtype) {
-    output_ = AddOutput({TensorType_RESOURCE, {1}});
+    output_ = AddOutput(TensorType_RESOURCE);
 
-    // Set up and pass in custom options using flexbuffer.
-    flexbuffers::Builder fbb;
-    fbb.Map([&]() {
-      fbb.String(kSharedNameStr, std::string(table_name));
-      fbb.Int(kKeyDtypeStr, key_dtype);
-      fbb.Int(kValueDtypeStr, value_dtype);
-    });
-    fbb.Finish();
-    SetCustomOp("HASHTABLE", fbb.GetBuffer(),
-                tflite::ops::custom::Register_HASHTABLE);
+    SetBuiltinOp(
+        BuiltinOperator_HASHTABLE, BuiltinOptions_HashtableOptions,
+        CreateHashtableOptions(builder_, table_id, key_dtype, value_dtype)
+            .Union());
     BuildInterpreter({});
   }
 
-  std::vector<int> GetOutput() {
-    TfLiteTensor* tensor_ptr = interpreter_->tensor(output_);
-    return std::vector<int>(tensor_ptr->data.i32, tensor_ptr->data.i32 + 1);
+  int GetOutput() {
+    int* int32_ptr =
+        reinterpret_cast<int32_t*>(interpreter_->tensor(0)->data.raw);
+    return *int32_ptr;
   }
   std::vector<int> GetOutputShape() { return GetTensorShape(output_); }
 
@@ -666,13 +652,12 @@ class HashtableOpModel : public SingleOpModel {
 };
 
 TEST(HashtableOpsTest, TestHashtable) {
-  HashtableOpModel m("test_hashtable", TensorType_INT64, TensorType_STRING);
+  HashtableOpModel m(/*table_id=*/1, TensorType_INT64, TensorType_STRING);
   EXPECT_EQ(m.GetResources().size(), 0);
   m.Invoke();
-  EXPECT_THAT(m.GetOutputShape(), ElementsAreArray({1}));
   auto& resources = m.GetResources();
   EXPECT_EQ(resources.size(), 1);
-  int resource_id = m.GetOutput()[0];
+  int resource_id = m.GetOutput();
   EXPECT_NE(resource_id, 0);
   auto* hashtable = resource::GetHashtableResource(&resources, resource_id);
   EXPECT_TRUE(hashtable != nullptr);
@@ -747,21 +732,20 @@ class BaseHashtableOpModel : public SingleOpModel {
  public:
   BaseHashtableOpModel() {}
 
-  void SetResourceId(const std::vector<int>& data) {
-    int32_t* tensor_buffer =
-        reinterpret_cast<int32_t*>(malloc(sizeof(int32_t)));
-    tensor_buffer[0] = data[0];
+  void SetResourceId(int resource_id) {
+    auto* tensor = interpreter_->tensor(resource_id_);
 
-    TfLiteIntArray* dims = TfLiteIntArrayCreate(1);
-    dims->data[0] = 1;
+    size_t bytesRequired = sizeof(int32_t);
+    TfLiteTensorRealloc(bytesRequired, tensor);
+    tensor->bytes = bytesRequired;
 
-    auto resource_handle_tensor = interpreter_->tensor(resource_id_);
+    TfLiteIntArray* outputSize = TfLiteIntArrayCreate(1);
+    outputSize->data[0] = 1;
+    if (tensor->dims) TfLiteIntArrayFree(tensor->dims);
+    tensor->dims = outputSize;
 
-    TfLiteTensorReset(
-        resource_handle_tensor->type, resource_handle_tensor->name, dims,
-        resource_handle_tensor->params, reinterpret_cast<char*>(tensor_buffer),
-        sizeof(int32_t), kTfLiteDynamic, resource_handle_tensor->allocation,
-        resource_handle_tensor->is_variable, resource_handle_tensor);
+    int32_t* resource_ptr = reinterpret_cast<int32_t*>(tensor->data.raw);
+    resource_ptr[0] = resource_id;
   }
 
   void CreateHashtableResource(int resource_id) {
@@ -809,8 +793,9 @@ class HashtableFindOpModel : public BaseHashtableOpModel {
 
     output_ = AddOutput({value_type, {lookup_size}});
 
-    SetCustomOp("HASHTABLE_FIND", {},
-                tflite::ops::custom::Register_HASHTABLE_FIND);
+    SetBuiltinOp(BuiltinOperator_HASHTABLE_FIND,
+                 BuiltinOptions_HashtableFindOptions,
+                 CreateHashtableFindOptions(builder_).Union());
     BuildInterpreter(
         {GetShape(resource_id_), GetShape(lookup_), GetShape(default_value_)});
   }
@@ -841,7 +826,7 @@ TEST(HashtableOpsTest, TestHashtableLookupStringToInt64) {
   HashtableFindOpModel<std::string, std::int64_t> m(TensorType_STRING,
                                                     TensorType_INT64, 3);
 
-  m.SetResourceId({kResourceId});
+  m.SetResourceId(kResourceId);
   m.SetStringLookup({"5", "6", "7"});
   m.SetDefaultValue({4});
 
@@ -859,7 +844,7 @@ TEST(HashtableOpsTest, TestHashtableLookupInt64ToString) {
   HashtableFindOpModel<std::int64_t, std::string> m(TensorType_INT64,
                                                     TensorType_STRING, 3);
 
-  m.SetResourceId({kResourceId});
+  m.SetResourceId(kResourceId);
   m.SetLookup({5, 6, 7});
   m.SetStringDefaultValue({"4"});
 
@@ -885,8 +870,9 @@ class HashtableImportOpModel : public BaseHashtableOpModel {
     keys_ = AddInput({key_type, {initdata_size}});
     values_ = AddInput({value_type, {initdata_size}});
 
-    SetCustomOp("HASHTABLE_IMPORT", {},
-                tflite::ops::custom::Register_HASHTABLE_IMPORT);
+    SetBuiltinOp(BuiltinOperator_HASHTABLE_IMPORT,
+                 BuiltinOptions_HashtableImportOptions,
+                 CreateHashtableImportOptions(builder_).Union());
     BuildInterpreter(
         {GetShape(resource_id_), GetShape(keys_), GetShape(values_)});
   }
@@ -913,7 +899,7 @@ TEST(HashtableOpsTest, TestHashtableImport) {
   HashtableImportOpModel<std::int64_t, std::string> m(TensorType_INT64,
                                                       TensorType_STRING, 3);
   EXPECT_EQ(m.GetResources().size(), 0);
-  m.SetResourceId({kResourceId});
+  m.SetResourceId(kResourceId);
   m.SetKeys({1, 2, 3});
   m.SetStringValues({"1", "2", "3"});
   m.CreateHashtableResource(kResourceId);
@@ -934,7 +920,7 @@ TEST(HashtableOpsTest, TestHashtableImportTwice) {
   HashtableImportOpModel<std::int64_t, std::string> m(TensorType_INT64,
                                                       TensorType_STRING, 3);
   EXPECT_EQ(m.GetResources().size(), 0);
-  m.SetResourceId({kResourceId});
+  m.SetResourceId(kResourceId);
   m.SetKeys({1, 2, 3});
   m.SetStringValues({"1", "2", "3"});
   m.CreateHashtableResource(kResourceId);
@@ -962,8 +948,9 @@ class HashtableSizeOpModel : public BaseHashtableOpModel {
 
     output_ = AddOutput({TensorType_INT64, {1}});
 
-    SetCustomOp("HASHTABLE_SIZE", {},
-                tflite::ops::custom::Register_HASHTABLE_SIZE);
+    SetBuiltinOp(BuiltinOperator_HASHTABLE_SIZE,
+                 BuiltinOptions_HashtableSizeOptions,
+                 CreateHashtableSizeOptions(builder_).Union());
     BuildInterpreter({GetShape(resource_id_)});
   }
 };
@@ -973,7 +960,7 @@ TEST(HashtableOpsTest, TestHashtableSize) {
   HashtableSizeOpModel<std::string, std::int64_t> m(TensorType_STRING,
                                                     TensorType_INT64);
 
-  m.SetResourceId({kResourceId});
+  m.SetResourceId(kResourceId);
 
   InitHashtableResource<std::string, std::int64_t>(
       &m.GetResources(), kResourceId, kTfLiteString, kTfLiteInt64,
@@ -988,7 +975,7 @@ TEST(HashtableOpsTest, TestHashtableSizeNonInitialized) {
   const int kResourceId = 42;
   HashtableSizeOpModel<std::string, std::int64_t> m(TensorType_STRING,
                                                     TensorType_INT64);
-  m.SetResourceId({kResourceId});
+  m.SetResourceId(kResourceId);
 
   // Invoke without hash table initialization.
   EXPECT_NE(m.InvokeUnchecked(), kTfLiteOk);
