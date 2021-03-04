@@ -14,67 +14,31 @@ limitations under the License.
 ==============================================================================*/
 #include <string>
 
-#include "flatbuffers/flexbuffers.h"  // from @flatbuffers
 #include "tensorflow/lite/c/builtin_op_data.h"
 #include "tensorflow/lite/c/common.h"
-#include "tensorflow/lite/core/api/flatbuffer_conversions.h"
 #include "tensorflow/lite/core/subgraph.h"
 #include "tensorflow/lite/experimental/resource/lookup_interfaces.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
-#include "tensorflow/lite/schema/schema_generated.h"
 
 namespace tflite {
 namespace ops {
-namespace custom {
+namespace builtin {
 namespace hashtable {
 
+// The current hash table op returns a key of the hash table resource objects,
+// shared by the context. Later, this implementation might be updated by sharing
+// the actual reference of hash table objects in the tensor buffer.
+
 static constexpr int kResourceHandleTensor = 0;
-static constexpr const char kSharedNameStr[] = "shared_name";
-static constexpr const char kKeyDtypeStr[] = "key_dtype";
-static constexpr const char kValueDtypeStr[] = "value_dtype";
-
-// TODO(b/144728911): The following structure should be moved to
-// builtin_op_data.h when it is ready to become a builtin op.
-typedef struct {
-  std::string table_name;
-  TfLiteType key_dtype;
-  TfLiteType value_dtype;
-} TfLiteHashtableParams;
-
-void* InitHashtable(TfLiteContext* context, const char* buffer, size_t length) {
-  TFLITE_CHECK(buffer != nullptr);
-
-  const uint8_t* buffer_t = reinterpret_cast<const uint8_t*>(buffer);
-  const flexbuffers::Map& m = flexbuffers::GetRoot(buffer_t, length).AsMap();
-  const std::string table_name = m[kSharedNameStr].AsString().str();
-
-  TfLiteType key_dtype, value_dtype;
-  ConvertTensorType(static_cast<TensorType>(m[kKeyDtypeStr].AsInt32()),
-                    &key_dtype, nullptr);
-  ConvertTensorType(static_cast<TensorType>(m[kValueDtypeStr].AsInt32()),
-                    &value_dtype, nullptr);
-
-  TfLiteHashtableParams* option = new TfLiteHashtableParams;
-  option->table_name = table_name;
-  option->key_dtype = key_dtype;
-  option->value_dtype = value_dtype;
-
-  return option;
-}
-
-void FreeHashtable(TfLiteContext* context, void* buffer) {
-  delete reinterpret_cast<TfLiteHashtableParams*>(buffer);
-}
 
 TfLiteStatus PrepareHashtable(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 0);
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
-  TF_LITE_ENSURE(context, node->user_data != nullptr);
+  TF_LITE_ENSURE(context, node->builtin_data != nullptr);
   const auto* params =
-      reinterpret_cast<const TfLiteHashtableParams*>(node->user_data);
+      reinterpret_cast<const TfLiteHashtableParams*>(node->builtin_data);
 
-  TF_LITE_ENSURE(context, !params->table_name.empty());
   TF_LITE_ENSURE(context, (params->key_dtype == kTfLiteInt64 &&
                            params->value_dtype == kTfLiteString) ||
                               (params->key_dtype == kTfLiteString &&
@@ -83,32 +47,28 @@ TfLiteStatus PrepareHashtable(TfLiteContext* context, TfLiteNode* node) {
   TfLiteTensor* resource_handle_tensor;
   TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, kResourceHandleTensor,
                                            &resource_handle_tensor));
-  TF_LITE_ENSURE(context, resource_handle_tensor->type == kTfLiteResource ||
-                              resource_handle_tensor->type == kTfLiteInt32);
-
-  // Resource tensor buffer as a hash table handler will have an 32-bit integer
-  // identity.
+  TF_LITE_ENSURE_EQ(context, resource_handle_tensor->type, kTfLiteResource);
   size_t bytesRequired = sizeof(int32_t);
-  resource_handle_tensor->bytes = bytesRequired;
+
   // Realloc space for an integer handle value.
   TfLiteTensorRealloc(bytesRequired, resource_handle_tensor);
+  resource_handle_tensor->bytes = bytesRequired;
 
-  // Make shape be [1] to store one integer value.
   TfLiteIntArray* outputSize = TfLiteIntArrayCreate(1);
   outputSize->data[0] = 1;
   if (resource_handle_tensor->dims)
     TfLiteIntArrayFree(resource_handle_tensor->dims);
   resource_handle_tensor->dims = outputSize;
+
   return kTfLiteOk;
 }
 
 TfLiteStatus EvalHashtable(TfLiteContext* context, TfLiteNode* node) {
-  TF_LITE_ENSURE(context, node->user_data != nullptr);
+  TF_LITE_ENSURE(context, node->builtin_data != nullptr);
   const auto* params =
-      reinterpret_cast<const TfLiteHashtableParams*>(node->user_data);
+      reinterpret_cast<const TfLiteHashtableParams*>(node->builtin_data);
 
-  // The resource id is generated based on the given table name.
-  const int32_t resource_id = std::hash<std::string>{}(params->table_name);
+  const int32_t resource_id = params->table_id;
 
   TfLiteTensor* resource_handle_tensor;
   TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, kResourceHandleTensor,
@@ -125,15 +85,11 @@ TfLiteStatus EvalHashtable(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace hashtable
 
 TfLiteRegistration* Register_HASHTABLE() {
-  static TfLiteRegistration r = {
-      hashtable::InitHashtable, hashtable::FreeHashtable,
-      hashtable::PrepareHashtable, hashtable::EvalHashtable};
+  static TfLiteRegistration r = {nullptr, nullptr, hashtable::PrepareHashtable,
+                                 hashtable::EvalHashtable};
   return &r;
 }
 
-// Alias for selective build.
-TfLiteRegistration* Register_HASH_TABLE_V2() { return Register_HASHTABLE(); }
-
-}  // namespace custom
+}  // namespace builtin
 }  // namespace ops
 }  // namespace tflite
