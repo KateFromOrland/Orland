@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_SPLIT_TEST_UTIL_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_SPLIT_TEST_UTIL_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_CONVOLUTION_TRANSPOSED_3X3_TEST_UTIL_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_CONVOLUTION_TRANSPOSED_3X3_TEST_UTIL_H_
 
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/task/testing_util.h"
@@ -22,14 +22,9 @@ limitations under the License.
 namespace tflite {
 namespace gpu {
 
-absl::Status SplitChannelsTest(TestExecutionEnvironment* env);
-absl::Status SplitChannelsX4Test(TestExecutionEnvironment* env);
-absl::Status SplitWidthTest(TestExecutionEnvironment* env);
-absl::Status SplitHeightTest(TestExecutionEnvironment* env);
-absl::Status SplitBatchTest(TestExecutionEnvironment* env);
-absl::Status SplitDepthTest(TestExecutionEnvironment* env);
+absl::Status ConvolutionTransposed3x3Test(TestExecutionEnvironment* env);
 
 }  // namespace gpu
 }  // namespace tflite
 
-#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_SPLIT_TEST_UTIL_H_
+#endif  // TENSORFLOW_LITE_DELEGATES_GPU_COMMON_TASKS_CONVOLUTION_TRANSPOSED_3X3_TEST_UTIL_H_
