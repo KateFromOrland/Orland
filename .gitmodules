@@ -1,0 +1,3 @@
+[submodule "Task"]
+	path = Task
+	url = https://github.com/KateFromOrland/Task.git
